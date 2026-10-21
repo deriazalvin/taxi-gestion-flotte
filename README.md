@@ -10,7 +10,7 @@ statistiques de CA et configuration du score de rémunération.
 - Spring Boot 3.4.0
 - Spring Web, Spring Data JPA, Spring Security, Spring Validation
 - Thymeleaf (interface web) + Bootstrap
-- MariaDB (production locale) / H2 (démo et tests)
+- MariaDB (production locale) / H2 (démo par défaut)
 
 ## Fonctionnalités
 
@@ -34,8 +34,9 @@ mvn spring-boot:run
 
 L'application démarre sur <http://localhost:8085>.
 
-> Par défaut, l'application utilise une base **H2 en mémoire** : aucune installation
-> de base de données n'est nécessaire pour essayer le projet.
+> Par défaut, l'application utilise une base **H2 sur fichier** (`./data/taxidb`) :
+> aucune installation de base de données n'est nécessaire pour essayer le projet.
+> Le dossier `data/` est ignoré par git.
 
 ### Comptes de démonstration
 
