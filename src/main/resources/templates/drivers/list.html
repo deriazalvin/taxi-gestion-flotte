@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{fragments/layout :: head('Chauffeurs')}"></head>
+<body>
+<div th:replace="~{fragments/nav :: nav}"></div>
+
+<main class="main" id="contenu">
+
+    <div class="page-title">
+        <div>
+            <h1>Chauffeurs</h1>
+            <p class="sub">Gestion des chauffeurs, permis et commissions</p>
+        </div>
+        <a class="btn btn-ripple" sec:authorize="hasAnyRole('ADMIN','MANAGER','OPERATOR')"
+           th:href="@{/drivers/new}">+ Nouveau chauffeur</a>
+    </div>
+
+    <form class="filter-bar" th:action="@{/drivers}" method="get" data-auto-submit>
+        <input type="text" name="keyword" th:value="${keyword}"
+               placeholder="Nom, téléphone, numéro de permis…" aria-label="Rechercher un chauffeur">
+
+        <select name="status" aria-label="Filtrer par statut">
+            <option value="">Tous les statuts</option>
+            <option th:each="s : ${statuses}" th:value="${s}" th:text="${s}"
+                    th:selected="${status != null and status.name() == s.name()}">STATUT</option>
+        </select>
+
+        <input type="hidden" name="sort" th:value="${sort}">
+        <button class="btn btn-ghost" type="submit">Filtrer</button>
+        <a class="btn btn-ghost" th:href="@{/drivers}">Réinitialiser</a>
+    </form>
+
+    <div class="table-wrap" data-aos="fade-up">
+        <table class="data row-hover">
+            <caption class="sr-only">Liste des chauffeurs, triable et filtrable</caption>
+            <thead>
+            <tr>
+                <th scope="col" class="sortable"
+                    th:classappend="${sort != null and sort.startsWith('lastName') ? (sort.endsWith('desc') ? 'sorted' : 'sorted asc') : ''}"
+                    <a th:href="@{/drivers(keyword=${keyword},status=${status},sort=${sort != null and sort.startsWith('lastName') ? (sort.endsWith('desc') ? 'lastName,asc' : 'lastName,desc') : 'lastName,asc'})}">Chauffeur</a>
+                </th>
+                <th scope="col" class="sortable"
+                    th:classappend="${sort != null and sort.startsWith('phone') ? (sort.endsWith('desc') ? 'sorted' : 'sorted asc') : ''}"
+                    <a th:href="@{/drivers(keyword=${keyword},status=${status},sort=${sort != null and sort.startsWith('phone') ? (sort.endsWith('desc') ? 'phone,asc' : 'phone,desc') : 'phone,asc'})}">Téléphone</a>
+                </th>
+                <th scope="col" class="sortable"
+                    th:classappend="${sort != null and sort.startsWith('licenseExpiryDate') ? (sort.endsWith('desc') ? 'sorted' : 'sorted asc') : ''}"
+                    <a th:href="@{/drivers(keyword=${keyword},status=${status},sort=${sort != null and sort.startsWith('licenseExpiryDate') ? (sort.endsWith('desc') ? 'licenseExpiryDate,asc' : 'licenseExpiryDate,desc') : 'licenseExpiryDate,asc'})}">Permis</a>
+                </th>
+                <th scope="col">Véhicule</th>
+                <th scope="col">Statut</th>
+                <th scope="col" class="sortable"
+                    th:classappend="${sort != null and sort.startsWith('commissionRate') ? (sort.endsWith('desc') ? 'sorted' : 'sorted asc') : ''}"
+                    <a th:href="@{/drivers(keyword=${keyword},status=${status},sort=${sort != null and sort.startsWith('commissionRate') ? (sort.endsWith('desc') ? 'commissionRate,asc' : 'commissionRate,desc') : 'commissionRate,desc'})}">Commission</a>
+                </th>
+                <th scope="col"><span class="sr-only">Action</span></th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="d : ${page.content}">
+                <td>
+                    <strong th:text="${d.firstName() + ' ' + d.lastName()}">Nom</strong>
+                    <div class="cell-sub">
+                        Embauché le <span th:text="${#temporals.format(d.hireDate(),'dd/MM/yyyy')}">date</span>
+                    </div>
+                </td>
+                <td class="cell-nowrap" th:text="${d.phone()}">06 00 00 00 00</td>
+                <td>
+                    <div class="cell-strong" th:text="${d.licenseNumber()}">PERMIS</div>
+                    <div class="cell-sub">
+                        Expire le <span th:text="${#temporals.format(d.licenseExpiryDate(),'dd/MM/yyyy')}">date</span>
+                    </div>
+                    <span class="badge badge-ok" th:if="${d.licenseValid()}">valide</span>
+                    <span class="badge badge-danger" th:unless="${d.licenseValid()}">expiré</span>
+                </td>
+                <td th:text="${d.vehiclePlate() ?: '—'}">AB-123-CD</td>
+                <td>
+                    <span class="badge badge-ok" th:if="${d.status().name() == 'DISPONIBLE'}" th:text="${d.status()}">DISPONIBLE</span>
+                    <span class="badge badge-warn" th:if="${d.status().name() == 'EN_COURSE'}" th:text="${d.status()}">EN_COURSE</span>
+                    <span class="badge badge-info" th:if="${d.status().name() == 'EN_PAUSE'}" th:text="${d.status()}">EN_PAUSE</span>
+                    <span class="badge badge-danger" th:if="${d.status().name() == 'SUSPENDU' or d.status().name() == 'INDISPONIBLE'}" th:text="${d.status()}">INDISPONIBLE</span>
+                </td>
+                <td class="cell-nowrap" th:text="${#numbers.formatDecimal(d.commissionRate(),1,2) + ' %'}">10,00 %</td>
+                <td>
+                    <a class="btn btn-outline btn-sm" th:href="@{/drivers/{id}/edit(id=${d.id()})}">Éditer</a>
+                </td>
+            </tr>
+            <tr th:if="${page.content.isEmpty()}">
+                <td colspan="7" class="cell-empty">Aucun chauffeur ne correspond aux critères.</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="pager" th:if="${page.totalPages > 1}">
+        <div class="pager-info" th:text="${page.totalElements} + ' résultat(s)'">0 résultat(s)</div>
+        <nav class="pager-nav" aria-label="Pagination">
+            <a class="btn btn-ghost btn-sm" th:classappend="${page.number == 0 ? 'disabled' : ''}"
+               th:href="@{/drivers(keyword=${keyword},status=${status},sort=${sort},page=${page.number - 1})}"
+               aria-label="Page précédente">←</a>
+            <span class="pager-current" aria-current="page"
+                  th:text="${page.number + 1} + ' / ' + ${page.totalPages}">1 / 1</span>
+            <a class="btn btn-ghost btn-sm" th:classappend="${page.last ? 'disabled' : ''}"
+               th:href="@{/drivers(keyword=${keyword},status=${status},sort=${sort},page=${page.number + 1})}"
+               aria-label="Page suivante">→</a>
+        </nav>
+    </div>
+</main>
+</body>
+</html>

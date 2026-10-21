@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Attribution')}"></head>
+<body>
+<div th:replace="~{fragments/nav :: nav}"></div>
+
+<main class="main" id="contenu" style="max-width:960px;">
+
+    <div class="page-title">
+        <div>
+            <h1 th:text="'Attribution — ' + ${ride.reference()}">Attribution</h1>
+            <p class="sub" th:text="${ride.pickupLocation() + ' → ' + ride.destination()}">A → B</p>
+        </div>
+        <a class="btn btn-ghost" th:href="@{/rides/{id}(id=${ride.id()})}">← Retour au détail</a>
+    </div>
+
+    <form class="card form-card" th:action="@{/rides/{id}/assign(id=${ride.id()})}" method="post"
+          data-aos="fade-up" style="margin-bottom:var(--sp-4);">
+        <h2 class="card-title">Attribution automatique</h2>
+        <p class="cell-sub" style="margin-bottom:var(--sp-4);max-width:64ch;">
+            L'algorithme sélectionne le chauffeur éligible obtenant le meilleur score pondéré,
+            calculé à partir de la <strong>charge du jour</strong>, de l'<strong>ancienneté</strong>
+            et de l'<strong>ancienneté du véhicule</strong>. Les coefficients sont ajustables
+            par un administrateur.
+        </p>
+        <button type="submit" class="btn btn-ripple" name="driverId">Attribuer au meilleur score</button>
+    </form>
+
+    <div class="section-head">
+        <h2>Candidats éligibles</h2>
+        <span class="cell-sub" th:text="${candidates.size()} + ' chauffeur(s)'">0 chauffeur(s)</span>
+    </div>
+
+    <div class="table-wrap" data-aos="fade-up">
+        <table class="data row-hover">
+            <caption class="sr-only">Chauffeurs éligibles classés par score d'attribution</caption>
+            <thead>
+            <tr>
+                <th scope="col">Chauffeur</th>
+                <th scope="col">Véhicule</th>
+                <th scope="col">Capacité</th>
+                <th scope="col">Charge</th>
+                <th scope="col">Ancienneté</th>
+                <th scope="col">Ancienneté véhicule</th>
+                <th scope="col">Score</th>
+                <th scope="col"><span class="sr-only">Action</span></th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="c : ${candidates}" th:classappend="${candidates.indexOf(c) == 0 ? 'candidate-best' : ''}">
+                <td>
+                    <div class="cell-strong" th:text="${c.driverName()}">Nom</div>
+                    <span class="badge badge-ok" th:if="${candidates.indexOf(c) == 0}">meilleur score</span>
+                </td>
+                <td class="cell-strong" th:text="${c.vehiclePlate()}">AB-123-CD</td>
+                <td th:text="${c.capacity()} + ' places'">4 places</td>
+                <td class="cell-nowrap"
+                    th:text="${c.loadPoints() != null ? #numbers.formatDecimal(c.loadPoints(),1,1) + ' / 10' : '—'}">—</td>
+                <td class="cell-nowrap"
+                    th:text="${c.seniorityPoints() != null ? #numbers.formatDecimal(c.seniorityPoints(),1,1) + ' / 10' : '—'}">—</td>
+                <td class="cell-nowrap"
+                    th:text="${c.vehiclePoints() != null ? #numbers.formatDecimal(c.vehiclePoints(),1,1) + ' / 10' : '—'}">—</td>
+                <td>
+                    <span class="badge badge-ok" th:text="${#numbers.formatDecimal(c.score(),1,1)}">0,0</span>
+                </td>
+                <td>
+                    <form th:action="@{/rides/{id}/assign(id=${ride.id()})}" method="post">
+                        <input type="hidden" name="driverId" th:value="${c.driverId()}">
+                        <button type="submit" class="btn btn-outline btn-sm">Assigner</button>
+                    </form>
+                </td>
+            </tr>
+            <tr th:if="${candidates.isEmpty()}">
+                <td colspan="8" class="cell-empty">
+                    <strong>Aucun chauffeur éligible.</strong><br>
+                    Vérifiez que des chauffeurs sont disponibles, que leurs permis sont valides
+                    et qu'ils sont associés à un véhicule disponible.
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</main>
+</body>
+</html>

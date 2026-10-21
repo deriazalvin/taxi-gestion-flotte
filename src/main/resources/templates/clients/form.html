@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Client')}"></head>
+<body>
+<div th:replace="~{fragments/nav :: nav}"></div>
+
+<main class="main" id="contenu" style="max-width:760px;">
+    <div class="page-title">
+        <div>
+            <h1 th:text="${client.id != null ? 'Modifier le client' : 'Nouveau client'}">Client</h1>
+            <p class="sub">Saisie des informations du client</p>
+        </div>
+        <a class="btn btn-ghost" th:href="@{/clients}">← Retour</a>
+    </div>
+
+    <form class="card form-card" th:action="@{/clients}" method="post" data-aos="fade-up">
+        <input type="hidden" name="id" th:value="${client.id}">
+
+        <div class="form-grid grid-2">
+            <div class="field">
+                <label for="name">Nom / société</label>
+                <input type="text" id="name" name="name" th:value="${client.name}" required>
+            </div>
+            <div class="field">
+                <label for="phone">Téléphone</label>
+                <input type="tel" id="phone" name="phone" th:value="${client.phone}" placeholder="06 00 00 00 00" autocomplete="tel" required>
+                <span class="cell-sub">Unique : un client ne peut pas être créé deux fois.</span>
+            </div>
+            <div class="field">
+                <label for="email">Email</label>
+                <input type="email" id="email" name="email" th:value="${client.email}" placeholder="contact@exemple.fr">
+            </div>
+            <div class="field">
+                <label for="address">Adresse</label>
+                <input type="text" id="address" name="address" th:value="${client.address}" placeholder="Adresse habituelle">
+            </div>
+        </div>
+
+        <div class="actions" style="margin-top:var(--sp-6);">
+            <button type="submit" class="btn btn-ripple">Enregistrer le client</button>
+            <a class="btn btn-ghost" th:href="@{/clients}">Annuler</a>
+        </div>
+    </form>
+</main>
+</body>
+</html>

@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{fragments/layout :: head('Tableau de bord')}"></head>
+<body>
+<div th:replace="~{fragments/nav :: nav}"></div>
+
+<main class="main" id="contenu">
+
+    <div class="page-title">
+        <div>
+            <h1>Tableau de bord</h1>
+            <p class="sub">Activité de la flotte et courses en attente d'attribution</p>
+        </div>
+        <a class="btn btn-ripple" sec:authorize="hasAnyRole('ADMIN','MANAGER','OPERATOR')"
+           th:href="@{/rides/new}">+ Nouvelle course</a>
+    </div>
+
+    <!-- Indicateurs clés -->
+    <section class="cards-grid grid-4" aria-label="Indicateurs clés">
+        <div class="card card-lift" data-aos="fade-up">
+            <div class="stat-icon" style="background:var(--danger-soft);color:var(--danger);" aria-hidden="true">!</div>
+            <div class="stat-number" th:text="${waitingCount}" th:attr="data-count=${waitingCount}">0</div>
+            <div class="stat-label">Courses en attente</div>
+        </div>
+
+        <div class="card card-lift" data-aos="fade-up" data-aos-delay="80">
+            <div class="stat-icon" style="background:var(--warn-soft);color:var(--warn);" aria-hidden="true">→</div>
+            <div class="stat-number" th:text="${activeCount}" th:attr="data-count=${activeCount}">0</div>
+            <div class="stat-label">Courses actives</div>
+        </div>
+
+        <div class="card card-lift" data-aos="fade-up" data-aos-delay="160">
+            <div class="stat-icon" style="background:var(--ok-soft);color:var(--ok);" aria-hidden="true">✓</div>
+            <div class="stat-number" th:text="${ridesToday}" th:attr="data-count=${ridesToday}">0</div>
+            <div class="stat-label">Terminées aujourd'hui</div>
+        </div>
+
+        <div class="card card-lift" data-aos="fade-up" data-aos-delay="240">
+            <div class="stat-icon" aria-hidden="true">Σ</div>
+            <div class="stat-number" th:text="${stats.totalRides()}"
+                 th:attr="data-count=${stats.totalRides()}">0</div>
+            <div class="stat-label">Activité sur 14 jours</div>
+        </div>
+    </section>
+
+    <!-- Disponibilité -->
+    <section class="cards-grid grid-3" style="margin-top:var(--sp-4);" aria-label="Disponibilité de la flotte">
+        <div class="card" data-aos="fade-up">
+            <div class="stat-label">Chauffeurs disponibles</div>
+            <div class="stat-number" style="color:var(--ok);"
+                 th:text="${driversAvailable}" th:attr="data-count=${driversAvailable}">0</div>
+        </div>
+        <div class="card" data-aos="fade-up" data-aos-delay="60">
+            <div class="stat-label">Véhicules disponibles</div>
+            <div class="stat-number" style="color:var(--ok);"
+                 th:text="${vehiclesAvailable}" th:attr="data-count=${vehiclesAvailable}">0</div>
+        </div>
+        <div class="card" data-aos="fade-up" data-aos-delay="120">
+            <div class="stat-label">Taux d'annulation (14 j)</div>
+            <div class="stat-number" th:text="${#numbers.formatDecimal(stats.cancellationRate(),1,1) + ' %'}">0 %</div>
+        </div>
+    </section>
+
+    <!-- File d'attente -->
+    <div class="section-head">
+        <h2>Courses en attente d'attribution</h2>
+        <a class="btn btn-ghost btn-sm" th:href="@{/rides}">Voir toutes les courses</a>
+    </div>
+
+    <div class="table-wrap" data-aos="fade-up">
+        <table class="data row-hover">
+            <caption class="sr-only">Courses actuellement en attente d'attribution</caption>
+            <thead>
+            <tr>
+                <th scope="col">Référence</th>
+                <th scope="col">Client</th>
+                <th scope="col">Trajet</th>
+                <th scope="col">Distance</th>
+                <th scope="col">Tarif</th>
+                <th scope="col">Départ prévu</th>
+                <th scope="col"><span class="sr-only">Action</span></th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="r : ${waitingRides}" th:id="'ride-' + ${r.id()}">
+                <td>
+                    <a th:href="@{/rides/{id}(id=${r.id()})}" class="cell-strong"
+                       th:text="${r.reference()}">COURSE-0000</a>
+                </td>
+                <td>
+                    <div th:text="${r.clientName()}">Client</div>
+                    <div class="cell-sub" th:text="${r.clientPhone()}">06 00 00 00 00</div>
+                </td>
+                <td>
+                    <span class="cell-nowrap" th:text="${r.pickupLocation()}">Départ</span>
+                    <span class="cell-arrow" aria-hidden="true">→</span>
+                    <span class="cell-nowrap" th:text="${r.destination()}">Arrivée</span>
+                </td>
+                <td th:text="${#numbers.formatDecimal(r.distance(),1,1) + ' km'}">10,0 km</td>
+                <td class="cell-strong" th:text="${'€ ' + #numbers.formatDecimal(r.fare(),1,2)}">€ 0,00</td>
+                <td class="cell-nowrap" th:text="${#temporals.format(r.rideDateTime(),'dd/MM HH:mm')}">01/01 10:00</td>
+                <td>
+                    <a class="btn btn-outline btn-sm"
+                       th:href="@{/rides/{id}/assign(id=${r.id()})}">Attribuer</a>
+                </td>
+            </tr>
+            <tr th:if="${waitingRides.isEmpty()}">
+                <td colspan="7" class="cell-empty">
+                    <span aria-hidden="true">✓</span> Aucune course en attente d'attribution.
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</main>
+</body>
+</html>

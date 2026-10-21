@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{fragments/layout :: head('Détail de la course')}"></head>
+<body>
+<div th:replace="~{fragments/nav :: nav}"></div>
+
+<main class="main" id="contenu" style="max-width:960px;">
+
+    <div class="page-title">
+        <div>
+            <h1 th:text="${ride.reference()}">COURSE-0000</h1>
+            <p class="sub">Détail de la course et cycle de vie</p>
+        </div>
+        <a class="btn btn-ghost" th:href="@{/rides}">← Retour à la liste</a>
+    </div>
+
+    <!-- Cycle de vie -->
+    <section class="card" data-aos="fade-up" aria-label="Cycle de vie de la course">
+        <h2 class="card-title">Progression</h2>
+        <div class="stepper">
+            <div class="step-chip done">
+                <span class="dot" aria-hidden="true"></span>
+                Demande
+            </div>
+            <div class="step-chip"
+                 th:classappend="${ride.status().name() != 'EN_ATTENTE' ? 'done' : 'now'}">
+                <span class="dot" aria-hidden="true"></span>
+                Attribution
+            </div>
+            <div class="step-chip"
+                 th:classappend="${ride.status().name() == 'EN_COURS' ? 'now' : (ride.status().name() == 'TERMINEE' or ride.status().name() == 'ANNULEE' ? 'done' : '')}">
+                <span class="dot" aria-hidden="true"></span>
+                En cours
+            </div>
+            <div class="step-chip"
+                 th:classappend="${ride.status().name() == 'TERMINEE' ? 'done' : (ride.status().name() == 'ANNULEE' ? 'blocked' : '')}">
+                <span class="dot" aria-hidden="true"></span>
+                <span th:text="${ride.status().name() == 'ANNULEE' ? 'Annulée' : 'Terminée'}">Terminée</span>
+            </div>
+        </div>
+        <p class="sr-only">
+            Statut actuel : <span th:text="${ride.status()}">STATUT</span>
+        </p>
+    </section>
+
+    <div class="cards-grid grid-2" style="margin-top:var(--sp-4);">
+
+        <!-- Informations course -->
+        <section class="card" data-aos="fade-up">
+            <h2 class="card-title">Course</h2>
+            <div class="kv"><span>Client</span><strong th:text="${ride.clientName()}">Client</strong></div>
+            <div class="kv"><span>Téléphone</span><strong th:text="${ride.clientPhone() ?: '—'}">06</strong></div>
+            <div class="kv">
+                <span>Trajet</span>
+                <strong class="kv-stack">
+                    <span th:text="${ride.pickupLocation()}">Départ</span>
+                    <span class="cell-arrow" aria-hidden="true">↓</span>
+                    <span th:text="${ride.destination()}">Arrivée</span>
+                </strong>
+            </div>
+            <div class="kv">
+                <span>Distance</span>
+                <strong th:text="${#numbers.formatDecimal(ride.distance(),1,1) + ' km'}">10,0 km</strong>
+            </div>
+            <div class="kv">
+                <span>Départ prévu</span>
+                <strong th:text="${#temporals.format(ride.rideDateTime(),'dd/MM/yyyy HH:mm')}">date</strong>
+            </div>
+            <div class="kv">
+                <span>Tarif</span>
+                <strong class="accent" th:text="${'€ ' + #numbers.formatDecimal(ride.fare(),1,2)}">€ 0,00</strong>
+            </div>
+            <div class="kv">
+                <span>Statut</span>
+                <strong>
+                    <span class="badge badge-info" th:if="${ride.status().name() == 'EN_ATTENTE'}" th:text="${ride.status()}">EN_ATTENTE</span>
+                    <span class="badge badge-warn" th:if="${ride.status().name() == 'ASSIGNEE'}" th:text="${ride.status()}">ASSIGNEE</span>
+                    <span class="badge badge-warn" th:if="${ride.status().name() == 'EN_COURS'}" th:text="${ride.status()}">EN_COURS</span>
+                    <span class="badge badge-ok" th:if="${ride.status().name() == 'TERMINEE'}" th:text="${ride.status()}">TERMINEE</span>
+                    <span class="badge badge-danger" th:if="${ride.status().name() == 'ANNULEE'}" th:text="${ride.status()}">ANNULEE</span>
+                </strong>
+            </div>
+        </section>
+
+        <!-- Affectation -->
+        <section class="card" data-aos="fade-up">
+            <h2 class="card-title">Affectation</h2>
+            <div class="kv">
+                <span>Chauffeur</span>
+                <strong th:text="${ride.driverName() ?: 'Non assigné'}">—</strong>
+            </div>
+            <div class="kv">
+                <span>Véhicule</span>
+                <strong th:text="${ride.vehiclePlate() ?: '—'}">—</strong>
+            </div>
+            <div class="kv" th:if="${ride.assignmentScore() != null}">
+                <span>Score d'attribution</span>
+                <strong class="accent" th:text="${ride.assignmentScore()}">0</strong>
+            </div>
+            <div class="kv" th:if="${ride.startedAt() != null}">
+                <span>Démarrée le</span>
+                <strong th:text="${#temporals.format(ride.startedAt(),'dd/MM/yyyy HH:mm')}">—</strong>
+            </div>
+            <div class="kv" th:if="${ride.completedAt() != null}">
+                <span>Terminée le</span>
+                <strong th:text="${#temporals.format(ride.completedAt(),'dd/MM/yyyy HH:mm')}">—</strong>
+            </div>
+            <div class="kv" th:if="${ride.cancelReason() != null}">
+                <span>Motif d'annulation</span>
+                <strong th:text="${ride.cancelReason()}">—</strong>
+            </div>
+
+            <div class="actions" style="margin-top:var(--sp-5);"
+                 sec:authorize="hasAnyRole('ADMIN','MANAGER','OPERATOR')">
+                <a class="btn btn-ripple" th:if="${ride.status().name() == 'EN_ATTENTE'}"
+                   th:href="@{/rides/{id}/assign(id=${ride.id()})}">Attribuer une course</a>
+
+                <form th:if="${ride.status().name() == 'ASSIGNEE'}"
+                      th:action="@{/rides/{id}/start(id=${ride.id()})}" method="post">
+                    <button class="btn btn-ripple" type="submit">Démarrer la course</button>
+                </form>
+
+                <form th:if="${ride.status().name() == 'EN_COURS'}"
+                      th:action="@{/rides/{id}/complete(id=${ride.id()})}" method="post"
+                      data-confirm="Confirmer la fin de cette course ?">
+                    <button class="btn btn-ripple" type="submit">Terminer la course</button>
+                </form>
+
+                <form th:if="${ride.status().name() == 'EN_ATTENTE' or ride.status().name() == 'ASSIGNEE'}"
+                      th:action="@{/rides/{id}/cancel(id=${ride.id()})}" method="post"
+                      data-confirm="Annuler définitivement cette course ?">
+                    <input type="hidden" name="reason" value="Annulation manuelle">
+                    <button class="btn btn-danger" type="submit">Annuler la course</button>
+                </form>
+            </div>
+        </section>
+    </div>
+</main>
+</body>
+</html>

@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Véhicule')}"></head>
+<body>
+<div th:replace="~{fragments/nav :: nav}"></div>
+
+<main class="main" id="contenu" style="max-width:820px;">
+
+    <div class="page-title">
+        <div>
+            <h1 th:text="${vehicle.id != null ? 'Modifier le véhicule' : 'Nouveau véhicule'}">Véhicule</h1>
+            <p class="sub">Immatriculation, caractéristiques et statut d'exploitation</p>
+        </div>
+        <a class="btn btn-ghost" th:href="@{/vehicles}">← Retour</a>
+    </div>
+
+    <form class="card form-card" th:action="@{/vehicles}" method="post" data-aos="fade-up">
+        <input type="hidden" name="id" th:value="${vehicle.id}">
+
+        <div class="form-grid grid-2">
+
+            <div class="field">
+                <label for="plateNumber">Immatriculation</label>
+                <input type="text" id="plateNumber" name="plateNumber" th:value="${vehicle.plateNumber}"
+                       placeholder="AB-123-CD" required>
+                <span class="cell-sub">Unique dans le parc automobile.</span>
+            </div>
+
+            <div class="field">
+                <label for="brand">Marque</label>
+                <input type="text" id="brand" name="brand" th:value="${vehicle.brand}"
+                       autocomplete="off" required>
+            </div>
+
+            <div class="field">
+                <label for="model">Modèle</label>
+                <input type="text" id="model" name="model" th:value="${vehicle.model}" required>
+            </div>
+
+            <div class="field">
+                <label for="modelYear">Année</label>
+                <input type="number" id="modelYear" name="modelYear"
+                       th:value="${vehicle.modelYear}" min="1950" max="2100" required>
+            </div>
+
+            <div class="field">
+                <label for="capacity">Capacité (places)</label>
+                <input type="number" id="capacity" name="capacity"
+                       th:value="${vehicle.capacity}" min="1" max="20" required>
+            </div>
+
+            <div class="field">
+                <label for="mileage">Kilométrage</label>
+                <input type="number" id="mileage" name="mileage" step="0.1" min="0"
+                       th:value="${vehicle.mileage}" required>
+            </div>
+
+            <div class="field">
+                <label for="status">Statut</label>
+                <select id="status" name="status">
+                    <option th:each="s : ${statuses}" th:value="${s}" th:text="${s}"
+                            th:selected="${vehicle.status != null and vehicle.status.name() == s.name()}">STATUT</option>
+                </select>
+                <span class="cell-sub">Un véhicule en maintenance ne peut pas recevoir de course.</span>
+            </div>
+        </div>
+
+        <div class="actions" style="margin-top:var(--sp-6);">
+            <button type="submit" class="btn btn-ripple">Enregistrer le véhicule</button>
+            <a class="btn btn-ghost" th:href="@{/vehicles}">Annuler</a>
+        </div>
+    </form>
+
+    <form th:if="${vehicle.id != null}" th:action="@{/vehicles/{id}/delete(id=${vehicle.id()})}" method="post"
+          style="margin-top:var(--sp-6);text-align:right;"
+          data-confirm="Supprimer définitivement ce véhicule ?">
+        <button type="submit" class="btn btn-danger btn-sm">Supprimer ce véhicule</button>
+    </form>
+</main>
+</body>
+</html>

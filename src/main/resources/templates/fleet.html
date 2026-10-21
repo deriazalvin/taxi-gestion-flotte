@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{fragments/layout :: head('Disponibilité')}"></head>
+<body>
+<div th:replace="~{fragments/nav :: nav}"></div>
+
+<main class="main" id="contenu">
+
+    <div class="page-title">
+        <div>
+            <h1>Disponibilité de la flotte</h1>
+            <p class="sub">État temps réel des chauffeurs et des véhicules</p>
+        </div>
+    </div>
+
+    <section class="cards-grid grid-4" aria-label="Indicateurs de flotte">
+        <div class="card" data-aos="fade-up">
+            <div class="stat-icon" style="background:var(--ok-soft);color:var(--ok);" aria-hidden="true">✓</div>
+            <div class="stat-number" th:text="${driversAvailable}" th:attr="data-count=${driversAvailable}">0</div>
+            <div class="stat-label">Chauffeurs disponibles</div>
+        </div>
+        <div class="card" data-aos="fade-up" data-aos-delay="80">
+            <div class="stat-icon" style="background:var(--ok-soft);color:var(--ok);" aria-hidden="true">✓</div>
+            <div class="stat-number" th:text="${vehiclesAvailable}" th:attr="data-count=${vehiclesAvailable}">0</div>
+            <div class="stat-label">Véhicules disponibles</div>
+        </div>
+        <div class="card" data-aos="fade-up" data-aos-delay="160">
+            <div class="stat-icon" style="background:var(--warn-soft);color:var(--warn);" aria-hidden="true">⚠</div>
+            <div class="stat-number" th:text="${expiredLicenses}" th:attr="data-count=${expiredLicenses}">0</div>
+            <div class="stat-label">Permis expirés</div>
+        </div>
+        <div class="card" data-aos="fade-up" data-aos-delay="240">
+            <div class="stat-icon" style="background:var(--info-soft);color:var(--info);" aria-hidden="true">→</div>
+            <div class="stat-number" th:text="${activeRides}" th:attr="data-count=${activeRides}">0</div>
+            <div class="stat-label">Courses actives</div>
+        </div>
+    </section>
+
+    <div class="section-head">
+        <h2>Chauffeurs</h2>
+        <a class="btn btn-ghost btn-sm" th:href="@{/drivers}">Gérer les chauffeurs</a>
+    </div>
+
+    <div class="table-wrap" data-aos="fade-up">
+        <table class="data row-hover">
+            <caption class="sr-only">Disponibilité des chauffeurs</caption>
+            <thead>
+            <tr>
+                <th scope="col">Chauffeur</th>
+                <th scope="col">Statut</th>
+                <th scope="col">Permis</th>
+                <th scope="col">Véhicule</th>
+                <th scope="col"><span class="sr-only">Action</span></th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="d : ${drivers}">
+                <td class="cell-strong" th:text="${d.firstName() + ' ' + d.lastName()}">Nom</td>
+                <td>
+                    <span class="badge badge-ok" th:if="${d.status().name() == 'DISPONIBLE'}" th:text="${d.status()}">DISPONIBLE</span>
+                    <span class="badge badge-warn" th:if="${d.status().name() == 'EN_COURSE'}" th:text="${d.status()}">EN_COURSE</span>
+                    <span class="badge badge-info" th:if="${d.status().name() == 'EN_PAUSE'}" th:text="${d.status()}">EN_PAUSE</span>
+                    <span class="badge badge-danger" th:if="${d.status().name() == 'SUSPENDU' or d.status().name() == 'INDISPONIBLE'}" th:text="${d.status()}">INDISPONIBLE</span>
+                </td>
+                <td>
+                    <span class="badge badge-ok" th:if="${d.licenseValid()}">valide</span>
+                    <span class="badge badge-danger" th:unless="${d.licenseValid()}">expiré</span>
+                </td>
+                <td th:text="${d.vehiclePlate() ?: '—'}">—</td>
+                <td sec:authorize="hasAnyRole('ADMIN','MANAGER','OPERATOR')">
+                    <form th:if="${d.status().name() != 'DISPONIBLE' and d.status().name() != 'EN_COURSE' and d.licenseValid()}"
+                          th:action="@{/drivers/{id}/status(id=${d.id()})}" method="post">
+                        <input type="hidden" name="status" value="DISPONIBLE">
+                        <button class="btn btn-outline btn-sm" type="submit">Rendre disponible</button>
+                    </form>
+                    <span class="cell-sub"
+                          th:unless="${d.status().name() != 'DISPONIBLE' and d.status().name() != 'EN_COURSE' and d.licenseValid()}">—</span>
+                </td>
+            </tr>
+            <tr th:if="${drivers.isEmpty()}">
+                <td colspan="5" class="cell-empty">Aucun chauffeur enregistré.</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="section-head">
+        <h2>Véhicules</h2>
+        <a class="btn btn-ghost btn-sm" th:href="@{/vehicles}">Gérer les véhicules</a>
+    </div>
+
+    <div class="table-wrap" data-aos="fade-up">
+        <table class="data row-hover">
+            <caption class="sr-only">Disponibilité des véhicules</caption>
+            <thead>
+            <tr>
+                <th scope="col">Véhicule</th>
+                <th scope="col">Statut</th>
+                <th scope="col">Kilométrage</th>
+                <th scope="col"><span class="sr-only">Action</span></th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="v : ${vehicles}">
+                <td>
+                    <div class="cell-strong" th:text="${v.plateNumber()}">AB-123-CD</div>
+                    <div class="cell-sub" th:text="${v.brand() + ' ' + v.model()}">Marque Modèle</div>
+                </td>
+                <td>
+                    <span class="badge badge-ok" th:if="${v.status().name() == 'DISPONIBLE'}" th:text="${v.status()}">DISPONIBLE</span>
+                    <span class="badge badge-warn" th:if="${v.status().name() == 'EN_COURSE'}" th:text="${v.status()}">EN_COURSE</span>
+                    <span class="badge badge-info" th:if="${v.status().name() == 'MAINTENANCE'}" th:text="${v.status()}">MAINTENANCE</span>
+                    <span class="badge badge-danger" th:if="${v.status().name() == 'HORS_SERVICE'}" th:text="${v.status()}">HORS_SERVICE</span>
+                </td>
+                <td class="cell-nowrap" th:text="${#numbers.formatDecimal(v.mileage(),0,0) + ' km'}">0 km</td>
+                <td sec:authorize="hasAnyRole('ADMIN','MANAGER','OPERATOR')">
+                    <form th:if="${v.status().name() == 'MAINTENANCE' or v.status().name() == 'HORS_SERVICE'}"
+                          th:action="@{/vehicles/{id}/status(id=${v.id()})}" method="post">
+                        <input type="hidden" name="status" value="DISPONIBLE">
+                        <button class="btn btn-outline btn-sm" type="submit">Remettre en service</button>
+                    </form>
+                    <form th:if="${v.status().name() == 'DISPONIBLE'}"
+                          th:action="@{/vehicles/{id}/status(id=${v.id()})}" method="post"
+                          data-confirm="Passer ce véhicule en maintenance ?">
+                        <input type="hidden" name="status" value="MAINTENANCE">
+                        <button class="btn btn-outline btn-sm" type="submit">Maintenance</button>
+                    </form>
+                    <span class="cell-sub"
+                          th:unless="${v.status().name() == 'MAINTENANCE' or v.status().name() == 'HORS_SERVICE' or v.status().name() == 'DISPONIBLE'}">—</span>
+                </td>
+            </tr>
+            <tr th:if="${vehicles.isEmpty()}">
+                <td colspan="4" class="cell-empty">Aucun véhicule enregistré.</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</main>
+</body>
+</html>

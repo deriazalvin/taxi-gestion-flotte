@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Statistiques')}"></head>
+<body>
+<div th:replace="~{fragments/nav :: nav}"></div>
+
+<main class="main" id="contenu">
+
+    <div class="page-title">
+        <div>
+            <h1>Statistiques</h1>
+            <p class="sub">Revenus, activité et performance de la flotte</p>
+        </div>
+    </div>
+
+    <form class="filter-bar" th:action="@{/stats}" method="get" data-aos="fade-up">
+        <div class="filter-dates">
+            <div class="field">
+                <label for="from">Du</label>
+                <input type="date" id="from" name="from" th:value="${from}">
+            </div>
+            <div class="field">
+                <label for="to">Au</label>
+                <input type="date" id="to" name="to" th:value="${to}">
+            </div>
+        </div>
+        <button class="btn btn-ghost" type="submit">Appliquer</button>
+        <a class="btn btn-ghost" th:href="@{/stats}">Réinitialiser</a>
+    </form>
+
+    <!-- Chiffres clés -->
+    <section class="cards-grid grid-4" aria-label="Chiffres clés de la période">
+        <div class="card" data-aos="fade-up">
+            <div class="stat-icon" aria-hidden="true">Σ</div>
+            <div class="stat-label">Courses terminées</div>
+            <div class="stat-number" th:text="${activity.totalRides()}"
+                 th:attr="data-count=${activity.totalRides()}">0</div>
+        </div>
+        <div class="card" data-aos="fade-up" data-aos-delay="80">
+            <div class="stat-icon" aria-hidden="true">€</div>
+            <div class="stat-label">Chiffre d'affaires</div>
+            <div class="stat-number accent"
+                 th:text="${'€ ' + #numbers.formatDecimal(revenue.totalRevenue(),0,0)}">€ 0</div>
+        </div>
+        <div class="card" data-aos="fade-up" data-aos-delay="160">
+            <div class="stat-icon" style="background:var(--info-soft);color:var(--info);" aria-hidden="true">%</div>
+            <div class="stat-label">Commission encaissée</div>
+            <div class="stat-number"
+                 th:text="${'€ ' + #numbers.formatDecimal(revenue.totalCommission(),0,0)}">€ 0</div>
+        </div>
+        <div class="card" data-aos="fade-up" data-aos-delay="240">
+            <div class="stat-icon" style="background:var(--danger-soft);color:var(--danger);" aria-hidden="true">!</div>
+            <div class="stat-label">Taux d'annulation</div>
+            <div class="stat-number"
+                 th:text="${#numbers.formatDecimal(activity.cancellationRate(),1,1) + ' %'}">0,0 %</div>
+        </div>
+    </section>
+
+    <!-- Palmarès -->
+    <section class="cards-grid grid-3" style="margin-top:var(--sp-4);" aria-label="Palmarès">
+        <div class="card" data-aos="fade-up">
+            <div class="stat-label">Chauffeur le plus actif</div>
+            <div class="stat-name" th:text="${activity.mostActiveDriver() ?: '—'}">—</div>
+            <div class="cell-sub" th:text="${activity.mostActiveDriverRides() + ' courses'}">0 courses</div>
+        </div>
+        <div class="card" data-aos="fade-up" data-aos-delay="60">
+            <div class="stat-label">Véhicule le plus utilisé</div>
+            <div class="stat-name" th:text="${activity.mostUsedVehicle() ?: '—'}">—</div>
+            <div class="cell-sub" th:text="${activity.mostUsedVehicleRides() + ' courses'}">0 courses</div>
+        </div>
+        <div class="card" data-aos="fade-up" data-aos-delay="120">
+            <div class="stat-label">Revenu moyen par course</div>
+            <div class="stat-name accent"
+                 th:text="${'€ ' + #numbers.formatDecimal(activity.averageRevenue(),1,2)}">€ 0,00</div>
+            <div class="cell-sub"
+                 th:text="${#numbers.formatDecimal(activity.totalDistanceKm(),0,0) + ' km parcourus'}">0 km</div>
+        </div>
+    </section>
+
+    <!-- Activité quotidienne -->
+    <div class="section-head">
+        <h2>Activité par jour</h2>
+        <span class="cell-sub"
+              th:text="${#numbers.formatDecimal(activity.totalDistanceKm(),0,0) + ' km parcourus sur la période'}">0 km</span>
+    </div>
+
+    <div class="table-wrap" data-aos="fade-up">
+        <table class="data row-hover">
+            <caption class="sr-only">Activité détaillée par jour</caption>
+            <thead>
+            <tr>
+                <th scope="col">Date</th>
+                <th scope="col">Courses</th>
+                <th scope="col">Annulées</th>
+                <th scope="col">Chiffre d'affaires</th>
+                <th scope="col">Distance</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="d : ${activity.byDay()}">
+                <td class="cell-strong cell-nowrap" th:text="${#temporals.format(d.date(),'dd/MM/yyyy')}">date</td>
+                <td th:text="${d.rideCount()}">0</td>
+                <td>
+                    <span class="badge badge-danger" th:if="${d.cancelledCount() > 0}" th:text="${d.cancelledCount()}">0</span>
+                    <span class="cell-sub" th:unless="${d.cancelledCount() > 0}">0</span>
+                </td>
+                <td class="cell-strong cell-nowrap" th:text="${'€ ' + #numbers.formatDecimal(d.revenue(),1,2)}">€ 0,00</td>
+                <td class="cell-nowrap" th:text="${#numbers.formatDecimal(d.distanceKm(),1,1) + ' km'}">0,0 km</td>
+            </tr>
+            <tr th:if="${activity.byDay().isEmpty()}">
+                <td colspan="5" class="cell-empty">Aucune activité sur la période sélectionnée.</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Répartition des revenus -->
+    <div class="section-head">
+        <h2>Répartition des revenus</h2>
+    </div>
+
+    <div class="cards-grid grid-2">
+        <section class="card" data-aos="fade-up">
+            <h2 class="card-title">Par chauffeur</h2>
+            <div th:each="d : ${revenue.byDriver()}">
+                <div class="bar-row">
+                    <span class="bar-label" th:text="${d.label()}">Nom</span>
+                    <span class="bar-value"
+                          th:text="${'€ ' + #numbers.formatDecimal(d.revenue(),0,0)}">€ 0</span>
+                </div>
+                <div class="progress" role="presentation">
+                    <span th:style="'width:' + ${d.revenue().doubleValue() > 0 ? (100 * d.revenue().doubleValue() / revenue.byDriver().get(0).revenue().doubleValue()) : 0} + '%'"></span>
+                </div>
+                <div class="cell-sub" th:text="${d.rideCount() + ' courses'}">0 courses</div>
+            </div>
+            <p th:if="${revenue.byDriver().isEmpty()}" class="cell-empty" style="padding:var(--sp-6) 0;">
+                Aucun revenu par chauffeur sur la période.
+            </p>
+        </section>
+
+        <section class="card" data-aos="fade-up" data-aos-delay="80">
+            <h2 class="card-title">Par véhicule</h2>
+            <div th:each="d : ${revenue.byVehicle()}">
+                <div class="bar-row">
+                    <span class="bar-label" th:text="${d.label()}">Immatriculation</span>
+                    <span class="bar-value"
+                          th:text="${'€ ' + #numbers.formatDecimal(d.revenue(),0,0)}">€ 0</span>
+                </div>
+                <div class="progress" role="presentation">
+                    <span th:style="'width:' + ${d.revenue().doubleValue() > 0 ? (100 * d.revenue().doubleValue() / revenue.byVehicle().get(0).revenue().doubleValue()) : 0} + '%'"></span>
+                </div>
+                <div class="cell-sub" th:text="${d.rideCount() + ' courses'}">0 courses</div>
+            </div>
+            <p th:if="${revenue.byVehicle().isEmpty()}" class="cell-empty" style="padding:var(--sp-6) 0;">
+                Aucun revenu par véhicule sur la période.
+            </p>
+        </section>
+    </div>
+</main>
+</body>
+</html>

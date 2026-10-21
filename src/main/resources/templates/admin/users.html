@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Utilisateurs')}"></head>
+<body>
+<div th:replace="~{fragments/nav :: nav}"></div>
+
+<main class="main" id="contenu" style="max-width:960px;">
+
+    <div class="page-title">
+        <div>
+            <h1>Utilisateurs</h1>
+            <p class="sub">Gestion des comptes et des droits d'accès</p>
+        </div>
+        <a class="btn btn-ghost" th:href="@{/admin/config}">Score d'attribution →</a>
+    </div>
+
+    <section class="card form-card" data-aos="fade-up">
+        <h2 class="card-title">Créer un compte</h2>
+        <form th:action="@{/admin/users}" method="post">
+            <div class="form-grid grid-4">
+                <div class="field">
+                    <label for="username">Identifiant</label>
+                    <input type="text" id="username" name="username" autocomplete="off" required>
+                </div>
+                <div class="field">
+                    <label for="password">Mot de passe</label>
+                    <input type="password" id="password" name="password"
+                           autocomplete="new-password" minlength="4" required>
+                </div>
+                <div class="field">
+                    <label for="displayName">Nom affiché</label>
+                    <input type="text" id="displayName" name="displayName">
+                </div>
+                <div class="field">
+                    <label for="role">Rôle</label>
+                    <select id="role" name="role">
+                        <option th:each="r : ${roles}" th:value="${r}" th:text="${r}">ROLE</option>
+                    </select>
+                </div>
+            </div>
+            <div class="actions" style="margin-top:var(--sp-5);">
+                <button class="btn btn-ripple" type="submit">Créer l'utilisateur</button>
+            </div>
+        </form>
+    </section>
+
+    <div class="section-head">
+        <h2>Comptes existants</h2>
+        <span class="cell-sub" th:text="${users.size()} + ' compte(s)'">0 compte(s)</span>
+    </div>
+
+    <div class="table-wrap" data-aos="fade-up">
+        <table class="data row-hover">
+            <caption class="sr-only">Comptes utilisateurs et droits associés</caption>
+            <thead>
+            <tr>
+                <th scope="col">Identifiant</th>
+                <th scope="col">Nom affiché</th>
+                <th scope="col">Rôle</th>
+                <th scope="col">Statut</th>
+                <th scope="col">Compte</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="u : ${users}">
+                <td class="cell-strong" th:text="${u.username()}">user</td>
+                <td th:text="${u.displayName()}">Nom</td>
+                <td>
+                    <form th:action="@{/admin/users/{id}/role(id=${u.id()})}" method="post"
+                          class="inline-form">
+                        <select name="role" aria-label="Rôle de l'utilisateur">
+                            <option th:each="r : ${roles}" th:value="${r}" th:text="${r}"
+                                    th:selected="${u.role() == r}">ROLE</option>
+                        </select>
+                        <button class="btn btn-ghost btn-sm" type="submit"
+                                th:if="${u.username() != 'admin'}"
+                                th:aria-label="'Appliquer le rôle de ' + ${u.username()}">OK</button>
+                    </form>
+                </td>
+                <td>
+                    <span class="badge badge-ok" th:if="${u.enabled()}">actif</span>
+                    <span class="badge badge-danger" th:unless="${u.enabled()}">désactivé</span>
+                </td>
+                <td>
+                    <form th:if="${u.username() != 'admin'}"
+                          th:action="@{/admin/users/{id}/enabled(id=${u.id()})}" method="post">
+                        <input type="hidden" name="enabled" th:value="${!u.enabled()}">
+                        <button class="btn btn-outline btn-sm" type="submit"
+                                th:text="${u.enabled() ? 'Désactiver' : 'Activer'}">Basculer</button>
+                    </form>
+                    <span class="cell-sub" th:if="${u.username() == 'admin'}">compte protégé</span>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</main>
+</body>
+</html>

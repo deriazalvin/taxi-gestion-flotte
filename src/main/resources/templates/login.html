@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{fragments/layout :: head('Connexion')}"></head>
+<body class="login-page">
+    <main class="login-card">
+        <form th:action="@{/login}" method="post">
+
+            <div class="login-mark" aria-hidden="true">T</div>
+            <h1>TaxiFleet</h1>
+            <p class="login-sub">Gestion de flotte et attribution automatique des courses</p>
+
+            <div class="form-grid" style="margin-top:var(--sp-5);">
+                <div class="field">
+                    <label for="username">Identifiant</label>
+                    <input type="text" id="username" name="username" autocomplete="username"
+                           autofocus required>
+                </div>
+                <div class="field">
+                    <label for="password">Mot de passe</label>
+                    <input type="password" id="password" name="password"
+                           autocomplete="current-password" required>
+                </div>
+            </div>
+
+            <p th:if="${param.error}" class="login-error" role="alert">
+                <span aria-hidden="true">✕</span> Identifiants incorrects.
+            </p>
+            <p th:if="${param.logout}" class="login-success" role="status">
+                <span aria-hidden="true">✓</span> Vous êtes déconnecté.
+            </p>
+            
+
+            <button type="submit" class="btn btn-ripple btn-block">Se connecter</button>
+
+            
+        </form>
+    </main>
+</body>
+</html>

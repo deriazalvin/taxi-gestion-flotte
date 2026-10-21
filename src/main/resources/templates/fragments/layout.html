@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:fragment="head(title)">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="color-scheme" content="dark">
+    <meta name="description" content="Gestion de flotte de taxis : courses, chauffeurs, véhicules et revenus.">
+    <title th:text="${title} + ' · TaxiFleet'">TaxiFleet</title>
+    <link rel="preconnect" href="/">
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23ffc400'/%3E%3Ctext x='16' y='23' font-family='sans-serif' font-size='19' font-weight='bold' text-anchor='middle' fill='%23080c14'%3ET%3C/text%3E%3C/svg%3E">
+    <script defer th:src="@{/js/main.js}"></script>
+</head>
+</html>

@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Chauffeur')}"></head>
+<body>
+<div th:replace="~{fragments/nav :: nav}"></div>
+
+<main class="main" id="contenu" style="max-width:820px;">
+
+    <div class="page-title">
+        <div>
+            <h1 th:text="${driver.id != null ? 'Modifier le chauffeur' : 'Nouveau chauffeur'}">Chauffeur</h1>
+            <p class="sub">Identité, permis de conduire et attitré de véhicule</p>
+        </div>
+        <a class="btn btn-ghost" th:href="@{/drivers}">← Retour</a>
+    </div>
+
+    <form class="card form-card" th:action="@{/drivers}" method="post" data-aos="fade-up">
+        <input type="hidden" name="id" th:value="${driver.id}">
+
+        <div class="form-grid grid-2">
+
+            <div class="field">
+                <label for="firstName">Prénom</label>
+                <input type="text" id="firstName" name="firstName" th:value="${driver.firstName}"
+                       autocomplete="given-name" required>
+            </div>
+
+            <div class="field">
+                <label for="lastName">Nom</label>
+                <input type="text" id="lastName" name="lastName" th:value="${driver.lastName}"
+                       autocomplete="family-name" required>
+            </div>
+
+            <div class="field">
+                <label for="phone">Téléphone</label>
+                <input type="tel" id="phone" name="phone" th:value="${driver.phone}"
+                       placeholder="06 00 00 00 00" autocomplete="tel" required>
+            </div>
+
+            <div class="field">
+                <label for="licenseNumber">Numéro de permis</label>
+                <input type="text" id="licenseNumber" name="licenseNumber"
+                       th:value="${driver.licenseNumber}" required>
+            </div>
+
+            <div class="field">
+                <label for="licenseExpiryDate">Expiration du permis</label>
+                <input type="date" id="licenseExpiryDate" name="licenseExpiryDate"
+                       th:value="${driver.licenseExpiryDate}" required>
+                <span class="cell-sub">Un permis expiré interdit toute attribution de course.</span>
+            </div>
+
+            <div class="field">
+                <label for="hireDate">Date d'embauche</label>
+                <input type="date" id="hireDate" name="hireDate"
+                       th:value="${driver.hireDate}" required>
+                <span class="cell-sub"> intervene dans le score d'attribution (ancienneté).</span>
+            </div>
+
+            <div class="field">
+                <label for="status">Statut</label>
+                <select id="status" name="status">
+                    <option th:each="s : ${statuses}" th:value="${s}" th:text="${s}"
+                            th:selected="${driver.status != null and driver.status.name() == s.name()}">STATUT</option>
+                </select>
+            </div>
+
+            <div class="field">
+                <label for="vehicleId">Véhicule attitré</label>
+                <select id="vehicleId" name="vehicleId">
+                    <option value="">— Aucun —</option>
+                    <option th:each="v : ${vehicles}" th:value="${v.id()}"
+                            th:text="${v.plateNumber() + ' · ' + v.brand() + ' ' + v.model()}"
+                            th:selected="${driver.vehicleId == v.id()}">AB-123-CD</option>
+                </select>
+                <span class="cell-sub">Obligatoire pour recevoir une course.</span>
+            </div>
+
+            <div class="field">
+                <label for="commissionRate">Commission (%)</label>
+                <input type="number" id="commissionRate" name="commissionRate" step="0.01" min="0" max="100"
+                       th:value="${driver.commissionRate}">
+                <span class="cell-sub">Part prélevée sur chaque course ; le solde revient au chauffeur.</span>
+            </div>
+        </div>
+
+        <div class="actions" style="margin-top:var(--sp-6);">
+            <button type="submit" class="btn btn-ripple">Enregistrer le chauffeur</button>
+            <a class="btn btn-ghost" th:href="@{/drivers}">Annuler</a>
+        </div>
+    </form>
+
+    <form th:if="${driver.id != null}" th:action="@{/drivers/{id}/delete(id=${driver.id()})}" method="post"
+          style="margin-top:var(--sp-6);text-align:right;"
+          data-confirm="Supprimer définitivement ce chauffeur ?">
+        <button type="submit" class="btn btn-danger btn-sm">Supprimer ce chauffeur</button>
+    </form>
+</main>
+</body>
+</html>

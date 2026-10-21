@@ -1,0 +1,14 @@
+# ============================================================
+#  Exemple de configuration locale
+#  Copiez ce fichier en "application-local.properties"
+#  puis modifiez les valeurs. Le fichier copie est ignore par git.
+# ============================================================
+
+# --- Base de donnees MariaDB locale ---
+spring.datasource.url=jdbc:mariadb://localhost:3306/taxidb?useSSL=false&serverTimezone=UTC
+spring.datasource.driver-class-name=org.mariadb.jdbc.Driver
+spring.datasource.username=CHANGE_MOI
+spring.datasource.password=CHANGE_MOI
+
+# --- Mot de passe des comptes de demonstration ---
+app.demo-data.password=password

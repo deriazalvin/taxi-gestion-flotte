@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<body th:fragment="nav">
+
+<a class="skip-link" href="#contenu">Aller au contenu principal</a>
+
+<header class="topbar">
+    <div class="topbar-inner">
+        <a class="brand" th:href="@{/dashboard}" aria-label="TaxiFleet, accueil">
+            <span class="brand-mark" aria-hidden="true">T</span>
+            <span class="brand-name">Taxi<span class="brand-accent">Fleet</span></span>
+        </a>
+
+        <nav class="nav-links" id="main-nav" aria-label="Navigation principale">
+            <a data-nav="/dashboard" th:href="@{/dashboard}">
+                <span aria-hidden="true">◧</span> Tableau de bord
+            </a>
+            <a data-nav="/rides" th:href="@{/rides}">
+                <span aria-hidden="true">⇄</span> Courses
+            </a>
+            <a data-nav="/drivers" th:href="@{/drivers}">
+                <span aria-hidden="true">◉</span> Chauffeurs
+            </a>
+            <a data-nav="/vehicles" th:href="@{/vehicles}">
+                <span aria-hidden="true">▤</span> Véhicules
+            </a>
+            <a data-nav="/clients" th:href="@{/clients}">
+                <span aria-hidden="true">☰</span> Clients
+            </a>
+            <a data-nav="/fleet" th:href="@{/fleet}">
+                <span aria-hidden="true">◈</span> Disponibilité
+            </a>
+            <a data-nav="/stats" th:href="@{/stats}">
+                <span aria-hidden="true">◔</span> Statistiques
+            </a>
+            <a sec:authorize="hasRole('ADMIN')" data-nav="/admin" th:href="@{/admin/users}">
+                <span aria-hidden="true">⚙</span> Admin
+            </a>
+        </nav>
+
+        <div class="topbar-user">
+            <span class="user-chip" th:text="${#authentication.name}">admin</span>
+            <form class="logout-form" th:action="@{/logout}" method="post">
+                <button type="submit" class="btn btn-ghost btn-sm">Déconnexion</button>
+            </form>
+        </div>
+    </div>
+</header>
+
+<div th:if="${success}" class="flash flash-success" role="status" aria-live="polite">
+    <span aria-hidden="true">✓</span>
+    <span th:text="${success}">Opération réussie.</span>
+</div>
+
+<div th:if="${error}" class="flash flash-error" role="alert">
+    <span aria-hidden="true">✕</span>
+    <span th:text="${error}">Une erreur est survenue.</span>
+</div>
+
+</body>
+</html>

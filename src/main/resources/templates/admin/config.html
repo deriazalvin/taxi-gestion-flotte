@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Score d\'attribution')}"></head>
+<body>
+<div th:replace="~{fragments/nav :: nav}"></div>
+
+<main class="main" id="contenu" style="max-width:720px;">
+
+    <div class="page-title">
+        <div>
+            <h1>Score d'attribution</h1>
+            <p class="sub">Coefficients de pondération du score des chauffeurs</p>
+        </div>
+        <a class="btn btn-ghost" th:href="@{/admin/users}">← Utilisateurs</a>
+    </div>
+
+    <!-- Formule -->
+    <section class="card" data-aos="fade-up">
+        <h2 class="card-title">Formule de calcul</h2>
+        <p class="formula">
+            score = <span class="accent">charge</span> × <span th:text="${score.loadWeight()}">2.00</span>
+            + <span class="accent">ancienneté</span> × <span th:text="${score.seniorityWeight()}">0.50</span>
+            + <span class="accent">véhicule</span> × <span th:text="${score.vehicleWeight()}">0.50</span>
+        </p>
+        <p class="cell-sub" style="margin-top:var(--sp-3);line-height:1.7;">
+            Chaque critère est noté de <strong>0 à 10</strong> ; le score le plus élevé désigne
+            le chauffeur à retenir.
+        </p>
+
+        <dl class="legend">
+            <dt>Charge</dt>
+            <dd>Courses déjà réalisées aujourd'hui, normalisées sur les candidats du moment.
+                Un chauffeur très sollicité voit sa note diminuer.</dd>
+
+            <dt>Ancienneté</dt>
+            <dd>Années de service depuis la date d'embauche, plafonnées à 10 ans.</dd>
+
+            <dt>Véhicule</dt>
+            <dd>Âge du véhicule attitré, en années, plafonné à 10 ans.</dd>
+        </dl>
+    </section>
+
+    <!-- Réglages -->
+    <form class="card form-card" th:action="@{/admin/config}" method="post" data-aos="fade-up"
+          style="margin-top:var(--sp-4);">
+        <h2 class="card-title">Pondération</h2>
+
+        <div class="form-grid grid-3">
+            <div class="field">
+                <label for="loadWeight">Poids charge</label>
+                <input type="number" id="loadWeight" name="loadWeight" step="0.05" min="0.1" max="10"
+                       th:value="${score.loadWeight()}" required>
+            </div>
+            <div class="field">
+                <label for="seniorityWeight">Poids ancienneté</label>
+                <input type="number" id="seniorityWeight" name="seniorityWeight" step="0.05" min="0" max="10"
+                       th:value="${score.seniorityWeight()}" required>
+            </div>
+            <div class="field">
+                <label for="vehicleWeight">Poids véhicule</label>
+                <input type="number" id="vehicleWeight" name="vehicleWeight" step="0.05" min="0" max="10"
+                       th:value="${score.vehicleWeight()}" required>
+            </div>
+        </div>
+
+        <p class="cell-sub" style="margin-top:var(--sp-4);">
+            Fixer un poids à <code>0</code> neutralise complètement le critère correspondant.
+        </p>
+
+        <div class="actions" style="margin-top:var(--sp-5);">
+            <button class="btn btn-ripple" type="submit">Enregistrer les coefficients</button>
+        </div>
+    </form>
+</main>
+</body>
+</html>

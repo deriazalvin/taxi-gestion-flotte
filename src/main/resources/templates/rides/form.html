@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Nouvelle course')}"></head>
+<body>
+<div th:replace="~{fragments/nav :: nav}"></div>
+
+<main class="main" id="contenu" style="max-width:820px;">
+
+    <div class="page-title">
+        <div>
+            <h1>Nouvelle course</h1>
+            <p class="sub">Enregistrement d'une demande de prise en charge</p>
+        </div>
+        <a class="btn btn-ghost" th:href="@{/rides}">← Retour</a>
+    </div>
+
+    <form class="card form-card" th:action="@{/rides}" method="post" data-aos="fade-up">
+        <div class="form-grid grid-2">
+
+            <div class="field">
+                <label for="clientName">Client</label>
+                <input type="text" id="clientName" name="clientName" th:value="${ride.clientName}"
+                       autocomplete="name" required>
+            </div>
+
+            <div class="field">
+                <label for="clientPhone">Téléphone</label>
+                <input type="tel" id="clientPhone" name="clientPhone" th:value="${ride.clientPhone}"
+                       placeholder="06 00 00 00 00" autocomplete="tel">
+            </div>
+
+            <div class="field">
+                <label for="pickupLocation">Lieu de départ</label>
+                <input type="text" id="pickupLocation" name="pickupLocation"
+                       th:value="${ride.pickupLocation}" required>
+            </div>
+
+            <div class="field">
+                <label for="destination">Destination</label>
+                <input type="text" id="destination" name="destination" th:value="${ride.destination}" required>
+            </div>
+
+            <div class="field">
+                <label for="distance">Distance (km)</label>
+                <input type="number" id="distance" name="distance" step="0.1" min="0.1"
+                       th:value="${ride.distance}" required>
+            </div>
+
+            <div class="field">
+                <label for="fare">Course estimée (€)</label>
+                <input type="number" id="fare" name="fare" step="0.01" min="0.01"
+                       th:value="${ride.fare}" required>
+            </div>
+
+            <div class="field">
+                <label for="rideDateTime">Départ prévu</label>
+                <input type="datetime-local" id="rideDateTime" name="rideDateTime"
+                       th:value="${ride.rideDateTime}">
+                <span class="cell-sub">Laisser vide pour planifier dans une heure.</span>
+            </div>
+        </div>
+
+        <div class="actions" style="margin-top:var(--sp-6);">
+            <button type="submit" class="btn btn-ripple">Enregistrer la course</button>
+            <a class="btn btn-ghost" th:href="@{/rides}">Annuler</a>
+        </div>
+    </form>
+</main>
+</body>
+</html>
